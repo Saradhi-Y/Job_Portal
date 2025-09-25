@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Govt Job Portal{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <!-- Left -->
+            <h1>Govt Job Notifications</h1>
+
+            <!-- Center -->
+            <nav>
+                <a href="/">Home</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </nav>
+
+            <!-- Right -->
+            <form method="GET" action="/" class="search-form">
+                <input type="text" name="q" placeholder="Search jobs..." value="{{ request.GET.q }}" />
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <p>© 2025 Govt Job Portal | All Rights Reserved</p>
+        </div>
+    </footer>
+</body>
+</html>

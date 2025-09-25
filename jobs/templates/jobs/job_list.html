@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Latest Govt Jobs{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/job_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<h2>Latest Govt Jobs</h2>
+
+<div class="job-list">
+    {% for job in jobs %}
+        <div class="job-card">
+            <div class="job-card-content">
+                <div class="job-info">
+                    <h3 class="job-title">{{ job.title }}</h3>
+                    
+                    <div class="job-meta-info">
+                        {% if job.organization %}
+                            <div class="job-meta-item">
+                                <strong>Organization:</strong> {{ job.organization }}
+                            </div>
+                        {% endif %}
+                        {% if job.location %}
+                            <div class="job-meta-item">
+                                <strong>Location:</strong> {{ job.location }}
+                            </div>
+                        {% endif %}
+                        {% if job.vacancies %}
+                            <div class="job-meta-item">
+                                <strong>Vacancies:</strong> {{ job.vacancies }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="apply-dates">
+                        Apply Online From {{ job.posted_on|date:"d.m.Y" }} to {{ job.application_deadline|date:"d.m.Y" }}
+                    </div>
+                    
+                   
+                </div>
+                
+                <div class="job-deadline">
+                    <p>LAST DATE TO APPLY</p>
+                    <span>{{ job.application_deadline|date:"d-m-Y" }}</span>
+                </div>
+                
+                <a href="{{ job.get_absolute_url }}" class="view-details-btn">View Details</a>
+            </div>
+        </div>
+    {% empty %}
+        <p>No job notifications available right now.</p>
+    {% endfor %}
+</div>
+{% endblock %}

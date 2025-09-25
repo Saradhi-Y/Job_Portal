@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ job.title }} | Govt Job Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/job_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="job-container">
+    <h1 class="job-title">{{ job.title }}</h1>
+
+    <!-- General Info -->
+    <div class="job-meta">
+        <p><strong>Organization:</strong> {{ job.organization }}</p>
+        <p><strong>Location:</strong> {{ job.location }}</p>
+        <p><strong>Vacancies:</strong> {{ job.vacancies }}</p>
+        <p><strong>Posted On:</strong> {{ job.posted_on|date:"d M Y" }}</p>
+    </div>
+
+    <!-- Key-Value Info -->
+    <div class="job-meta">
+        <p><strong>Eligibility:</strong> {{ job.eligibility }}</p>
+        <p><strong>Age Limit:</strong> {{ job.age_limit }}</p>
+        <p><strong>Application Fee:</strong> {{ job.application_fee }}</p>
+        <p><strong>Application Deadline:</strong> {{ job.application_deadline|date:"d M Y" }}</p>
+    </div>
+
+    <!-- Job Description -->
+    <div class="job-section">
+        <h2>Job Description</h2>
+        <p>{{ job.description|linebreaks }}</p>
+    </div>
+
+    <!-- Application Process -->
+    <div class="job-section">
+        <h2>Application Process</h2>
+        <p>{{ job.application_process|linebreaks }}</p>
+    </div>
+
+    <!-- Selection Process -->
+    <div class="job-section">
+        <h2>Selection Process</h2>
+        <p>{{ job.selection_process|linebreaks }}</p>
+    </div>
+
+    <!-- Detailed Vacancies -->
+    {% if job.vacancy_images.all %}
+    <div class="job-section">
+        <h2>Detailed Vacancies</h2>
+        <div class="images" id="imageGallery">
+            {% for img in job.vacancy_images.all %}
+                <div class="image-item" onclick="openModal(this)">
+                    <img src="{{ img.image.url }}" alt="Vacancy Image" data-full="{{ img.image.url }}">
+                    {% if img.caption %}
+                    <div class="caption">{{ img.caption }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" onclick="closeModalOnBackground(event)">
+        <div class="close-modal" onclick="closeModal()">&times;</div>
+        <div class="nav-button prev" onclick="previousImage()" id="prevBtn">&#8249;</div>
+        <div class="nav-button next" onclick="nextImage()" id="nextBtn">&#8250;</div>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image" src="" alt="Full Screen Image">
+            <div id="modalCaption" class="modal-caption"></div>
+        </div>
+        <div id="imageCounter" class="image-counter"></div>
+    </div>
+    {% endif %}
+
+    <!-- More Information -->
+    {% if job.more_information %}
+    <div class="job-section">
+        <h2>More Information</h2>
+        <p>{{ job.more_information|linebreaks }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Apply Button -->
+    <div class="job-section">
+        <a href="{{ job.application_link }}" target="_blank" class="apply-btn">Apply Here</a>
+    </div>
+
+    <!-- Back Link -->
+    <div class="back-link">
+        <a href="/">← Back to Job List</a>
+    </div>
+</div>
+
+<!-- JavaScript for Image Modal -->
+<script>
+let currentImageIndex = 0;
+let images = [];
+let captions = [];
+
+// Initialize images array when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const imageElements = document.querySelectorAll('.image-item img');
+    const captionElements = document.querySelectorAll('.image-item .caption');
+    
+    imageElements.forEach((img, index) => {
+        images.push(img.src);
+        const caption = captionElements[index] ? captionElements[index].textContent : '';
+        captions.push(caption);
+    });
+    
+    updateNavigationButtons();
+});
+
+function openModal(element) {
+    // Find the index by getting all image items and finding the clicked one
+    const allImageItems = document.querySelectorAll('#imageGallery .image-item');
+    currentImageIndex = Array.from(allImageItems).indexOf(element);
+    
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const imageCounter = document.getElementById('imageCounter');
+    
+    modalImage.src = images[currentImageIndex];
+    modalCaption.textContent = captions[currentImageIndex];
+    imageCounter.textContent = `${currentImageIndex + 1} / ${images.length}`;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    
+    updateNavigationButtons();
+}
+
+function closeModal() {
+    const modal = document.getElementById('imageModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+function closeModalOnBackground(event) {
+    if (event.target === event.currentTarget) {
+        closeModal();
+    }
+}
+
+function nextImage() {
+    if (currentImageIndex < images.length - 1) {
+        currentImageIndex++;
+        updateModalContent();
+    }
+}
+
+function previousImage() {
+    if (currentImageIndex > 0) {
+        currentImageIndex--;
+        updateModalContent();
+    }
+}
+
+function updateModalContent() {
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const imageCounter = document.getElementById('imageCounter');
+    
+    modalImage.src = images[currentImageIndex];
+    modalCaption.textContent = captions[currentImageIndex];
+    imageCounter.textContent = `${currentImageIndex + 1} / ${images.length}`;
+    
+    updateNavigationButtons();
+}
+
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (images.length <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        return;
+    }
+    
+    prevBtn.style.display = 'flex';
+    nextBtn.style.display = 'flex';
+    
+    prevBtn.disabled = currentImageIndex === 0;
+    nextBtn.disabled = currentImageIndex === images.length - 1;
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(event) {
+    const modal = document.getElementById('imageModal');
+    if (modal.classList.contains('active')) {
+        switch(event.key) {
+            case 'Escape':
+                closeModal();
+                break;
+            case 'ArrowLeft':
+                previousImage();
+                break;
+            case 'ArrowRight':
+                nextImage();
+                break;
+        }
+    }
+});
+
+// Touch/swipe support for mobile
+let startX = 0;
+let startY = 0;
+
+document.getElementById('imageModal').addEventListener('touchstart', function(event) {
+    startX = event.touches[0].clientX;
+    startY = event.touches[0].clientY;
+});
+
+document.getElementById('imageModal').addEventListener('touchend', function(event) {
+    if (!startX || !startY) return;
+    
+    let endX = event.changedTouches[0].clientX;
+    let endY = event.changedTouches[0].clientY;
+    
+    let diffX = startX - endX;
+    let diffY = startY - endY;
+    
+    // Only process horizontal swipes
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+        if (diffX > 0) {
+            // Swipe left - next image
+            nextImage();
+        } else {
+            // Swipe right - previous image
+            previousImage();
+        }
+    }
+    
+    startX = 0;
+    startY = 0;
+});
+</script>
+{% endblock %}
